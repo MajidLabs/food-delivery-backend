@@ -1,0 +1,132 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fd-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_MULTIPLE_DATABASES: user_db,order_db,payment_db
+    volumes:
+      - ./infra/postgres/init-multi-db.sh:/docker-entrypoint-initdb.d/init-multi-db.sh
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [food-delivery]
+
+  redis:
+    image: redis:7-alpine
+    container_name: fd-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [food-delivery]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: fd-rabbitmq
+    restart: unless-stopped
+    volumes:
+      - ./infra/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./infra/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [food-delivery]
+
+  user-service:
+    build: ./services/user-service
+    container_name: fd-user-service
+    restart: unless-stopped
+    env_file: ./services/user-service/.env.docker
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    ports:
+      - '3001:3001'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3001/health']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks: [food-delivery]
+
+  order-service:
+    build: ./services/order-service
+    container_name: fd-order-service
+    restart: unless-stopped
+    env_file: ./services/order-service/.env.docker
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports:
+      - '3002:3002'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3002/health']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks: [food-delivery]
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: fd-payment-service
+    restart: unless-stopped
+    env_file: ./services/payment-service/.env.docker
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+    ports:
+      - '3003:3003'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3003/health']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks: [food-delivery]
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: fd-api-gateway
+    restart: unless-stopped
+    env_file: ./services/api-gateway/.env.docker
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      user-service: { condition: service_started }
+      order-service: { condition: service_started }
+      payment-service: { condition: service_started }
+    ports:
+      - '3000:3000'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO-', 'http://localhost:3000/health']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks: [food-delivery]
+
+networks:
+  food-delivery:
+    driver: bridge
+
+volumes:
+  postgres-data:

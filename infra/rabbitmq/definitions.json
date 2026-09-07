@@ -1,0 +1,21 @@
+{
+  "users": [
+    { "name": "fooduser", "password": "foodpass", "tags": "administrator" }
+  ],
+  "vhosts": [{ "name": "/" }],
+  "permissions": [
+    { "user": "fooduser", "vhost": "/", "configure": ".*", "write": ".*", "read": ".*" }
+  ],
+  "exchanges": [
+    { "name": "dlx.order", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false, "internal": false, "arguments": {} },
+    { "name": "dlx.payment", "vhost": "/", "type": "fanout", "durable": true, "auto_delete": false, "internal": false, "arguments": {} }
+  ],
+  "queues": [
+    { "name": "order_events_queue.dlq", "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} },
+    { "name": "payment_events_queue.dlq", "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} }
+  ],
+  "bindings": [
+    { "source": "dlx.order", "vhost": "/", "destination": "order_events_queue.dlq", "destination_type": "queue", "routing_key": "", "arguments": {} },
+    { "source": "dlx.payment", "vhost": "/", "destination": "payment_events_queue.dlq", "destination_type": "queue", "routing_key": "", "arguments": {} }
+  ]
+}
