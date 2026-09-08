@@ -36,7 +36,7 @@ export class OrdersService {
     );
 
     this.logger.log(
-      `Order ${order.id} created for user ${userId} — total ${totalAmount}`,
+      `Order ${order.id} created for user ${userId} - total ${totalAmount}`,
     );
 
     // Fire-and-forget: Payment Service owns the payment lifecycle from here.

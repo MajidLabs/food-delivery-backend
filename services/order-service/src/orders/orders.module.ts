@@ -24,7 +24,7 @@ import { OrdersService } from './orders.service';
             queueOptions: {
               durable: true,
               // Must match Payment Service's own consumer-side declaration
-              // of this queue exactly (see payment-service main.ts) — every
+              // of this queue exactly (see payment-service main.ts) - every
               // client/server that declares the same queue name must agree
               // on its arguments, or RabbitMQ rejects the second declarer
               // with a 406 PRECONDITION_FAILED and the connection is torn

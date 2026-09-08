@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# health-check.sh — end-to-end smoke test for the Food Delivery Backend.
+# health-check.sh - end-to-end smoke test for the Food Delivery Backend.
 #
 # Exercises the full happy path (register -> login -> place an order ->
 # async payment processing -> confirmed) plus the main negative paths
-# (400/401/403/404/409), against a stack that's already running — either
+# (400/401/403/404/409), against a stack that's already running - either
 # `docker compose up` or the four services started locally.
 #
 # Requirements: bash, curl, python3
@@ -77,11 +77,11 @@ req() {
   if [ "$status" = "$expected" ]; then
     pass "$label ($status)"
   else
-    fail "$label (expected $expected, got '${status:-no response}') — $body"
+    fail "$label (expected $expected, got '${status:-no response}') - $body"
   fi
 }
 
-# raw_get <url> — like req, but no assertion / no bookkeeping. Used for
+# raw_get <url> - like req, but no assertion / no bookkeeping. Used for
 # polling loops where only the final state should count as a check.
 raw_get() {
   curl -s -m 5 "$1" "${EXTRA_HEADERS[@]}"
@@ -122,7 +122,7 @@ TOKEN=$(json_field "$LAST_BODY" accessToken)
 if [ -z "$TOKEN" ]; then
   fail "extract accessToken from login response"
   printf "\n${BOLD}%d passed, %d failed${RESET}\n" "$PASS" "$FAIL"
-  echo "Cannot continue without a token — aborting the rest of the checks."
+  echo "Cannot continue without a token - aborting the rest of the checks."
   exit 1
 fi
 
@@ -156,7 +156,7 @@ else
   done
 
   if [ "$STATUS" = "PENDING" ]; then
-    fail "order stayed PENDING for 8s — order.created -> payment.completed round trip did not complete"
+    fail "order stayed PENDING for 8s - order.created -> payment.completed round trip did not complete"
   else
     pass "order reached a terminal status via the async payment flow ($STATUS)"
   fi

@@ -22,7 +22,7 @@ import { PaymentsService } from './payments.service';
             queueOptions: {
               durable: true,
               // Must match Order Service's own consumer-side declaration of
-              // this queue exactly (see order-service main.ts) — see the
+              // this queue exactly (see order-service main.ts) - see the
               // matching comment in order-service/src/orders/orders.module.ts.
               arguments: { 'x-dead-letter-exchange': 'dlx.order' },
             },

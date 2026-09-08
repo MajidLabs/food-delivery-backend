@@ -24,7 +24,7 @@ export async function handleWithRetry(
 
     if (attempt >= MAX_REDELIVER_ATTEMPTS) {
       logger.error(
-        'Max retries exceeded — sending message to dead-letter queue',
+        'Max retries exceeded - sending message to dead-letter queue',
       );
       channel.nack(message, false, false);
       return;
