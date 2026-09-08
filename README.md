@@ -1,11 +1,6 @@
 # Food Delivery Backend
 
-> **Portfolio note:** replace `YOUR_USERNAME/YOUR_REPO` in the badge URLs
-> below with your actual GitHub path once you've pushed this repo — the
-> badges are wired up but obviously can't resolve to a repo that doesn't
-> exist yet.
-
-[![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/MajidLabs/food-delivery-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/MajidLabs/food-delivery-backend/actions/workflows/ci.yml)
 ![Node](https://img.shields.io/badge/node-20%2B-339933?logo=node.js&logoColor=white)
 ![NestJS](https://img.shields.io/badge/NestJS-10-E0234E?logo=nestjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
@@ -17,11 +12,11 @@ front of independent **User**, **Order**, and **Payment** NestJS services,
 communicating over RabbitMQ (both request/response RPC and event-driven
 messaging), with PostgreSQL storage, Redis caching, JWT auth, structured
 logging, health checks, two layers of retry, 24 automated tests (22 unit +
-2 end-to-end — see [Tests](#tests)), and a GitHub Actions pipeline that
+2 end-to-end - see [Tests](#tests)), and a GitHub Actions pipeline that
 builds and publishes Docker images.
 
-Full write-up of *why* it's built this way — including a real integration
-bug this project's own testing caught and fixed — is in
+Full write-up of *why* it's built this way - including a real integration
+bug this project's own testing caught and fixed - is in
 [ARCHITECTURE.md](./ARCHITECTURE.md). A step-by-step way to verify all of
 this yourself is in [CHECKLIST.md](./CHECKLIST.md).
 
@@ -43,32 +38,32 @@ this yourself is in [CHECKLIST.md](./CHECKLIST.md).
 
 ## What this demonstrates
 
-- **Microservices architecture** — an API Gateway plus three independently
+- **Microservices architecture** - an API Gateway plus three independently
   built, tested, and deployable NestJS services, each with its own
   database, Dockerfile, and CI job.
-- **Both messaging patterns over one broker** — synchronous request/response
-  RPC (Gateway → service) *and* asynchronous event-driven pub/sub
+- **Both messaging patterns over one broker** - synchronous request/response
+  RPC (Gateway -> service) *and* asynchronous event-driven pub/sub
   (Order ⇄ Payment), on deliberately separate RabbitMQ queues so a slow
   event consumer can never block a fast RPC call.
-- **Two layers of retry, for two different failure modes** — in-process
+- **Two layers of retry, for two different failure modes** - in-process
   exponential backoff for "this call might just need a moment," and
   message-level redelivery with a dead-letter queue for "this needs to
   survive a process restart."
-- **Auth done the boring, correct way** — bcrypt(-compatible) password
+- **Auth done the boring, correct way** - bcrypt(-compatible) password
   hashing, JWTs verified locally at the Gateway (no chatty round-trip to
   User Service per request), per-resource ownership checks, input
   validation, rate limiting.
-- **Caching with real invalidation** — Redis read-through cache on order
+- **Caching with real invalidation** - Redis read-through cache on order
   lookups, explicitly busted the moment an order's status changes, not just
   left to expire.
-- **Observability basics** — structured JSON logs, correlation IDs,
+- **Observability basics** - structured JSON logs, correlation IDs,
   per-service health checks tailored to what each service actually depends
   on (no service reports itself unhealthy because of a dependency it
   doesn't use).
-- **A real CI/CD pipeline** — lint → unit test → build → Docker build →
+- **A real CI/CD pipeline** - lint -> unit test -> build -> Docker build ->
   publish to GHCR, matrixed across all four services, using nothing but the
   automatic `GITHUB_TOKEN`.
-- **Tested against real infrastructure, not just mocks** — unit tests mock
+- **Tested against real infrastructure, not just mocks** - unit tests mock
   their boundaries (fast, deterministic); separately, a one-time **manual**
   pass ran the whole stack end-to-end against real PostgreSQL/Redis/
   RabbitMQ and caught two real bugs no unit test would have: a RabbitMQ
@@ -80,15 +75,15 @@ this yourself is in [CHECKLIST.md](./CHECKLIST.md).
   [ARCHITECTURE.md](./ARCHITECTURE.md#two-layers-of-retry)).
   [`scripts/health-check.sh`](./scripts/health-check.sh) is a **separate,
   automated** 20-assertion script that reproduces the same kind of
-  end-to-end check going forward — it didn't find either bug itself, it
+  end-to-end check going forward - it didn't find either bug itself, it
   exists so the next regression doesn't need a manual pass to catch.
 
 ## Architecture
 
 ```
-Client → API Gateway (:3000) ─RPC/RabbitMQ─┬→ User Service (:3001) → PostgreSQL
-                                            ├→ Order Service (:3002) → PostgreSQL, Redis
-                                            └→ Payment Service (:3003) → PostgreSQL
+Client -> API Gateway (:3000) ─RPC/RabbitMQ─┬-> User Service (:3001) -> PostgreSQL
+                                            ├-> Order Service (:3002) -> PostgreSQL, Redis
+                                            └-> Payment Service (:3003) -> PostgreSQL
                         Order Service ⇄ Payment Service via RabbitMQ events
 ```
 
@@ -137,19 +132,19 @@ curl -s -X POST http://localhost:3000/auth/register \
   -H 'Content-Type: application/json' \
   -d '{"email":"jane@example.com","password":"password123","fullName":"Jane Doe"}'
 
-# Log in — copy the accessToken from the response
+# Log in - copy the accessToken from the response
 curl -s -X POST http://localhost:3000/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"jane@example.com","password":"password123"}'
 
 TOKEN="<paste accessToken here>"
 
-# Place an order — this kicks off the async payment flow
+# Place an order - this kicks off the async payment flow
 curl -s -X POST http://localhost:3000/orders \
   -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' \
   -d '{"items":[{"name":"Margherita Pizza","quantity":1,"price":12.5},{"name":"Soda","quantity":2,"price":2.5}]}'
 
-# Poll the order — status flips PENDING -> CONFIRMED/FAILED within a second or two
+# Poll the order - status flips PENDING -> CONFIRMED/FAILED within a second or two
 curl -s http://localhost:3000/orders/<order-id> -H "Authorization: Bearer $TOKEN"
 
 # List your orders
@@ -161,12 +156,12 @@ curl -s http://localhost:3000/payments/order/<order-id> -H "Authorization: Beare
 
 The simulated payment gateway inside Payment Service fails about 20% of the
 time on any given attempt (retried twice with backoff before the order is
-marked `FAILED`) — this is intentional, to exercise the retry path; just
+marked `FAILED`) - this is intentional, to exercise the retry path; just
 place another order if you land on one.
 
 ## Verify it works
 
-Don't take the above on faith — [CHECKLIST.md](./CHECKLIST.md) is a
+Don't take the above on faith - [CHECKLIST.md](./CHECKLIST.md) is a
 box-by-box checklist covering static checks, container health, the full API
 flow, and the negative paths (wrong password, duplicate email, another
 user's order, etc). The fast path is one command against a running stack:
@@ -177,13 +172,13 @@ user's order, etc). The fast path is one command against a running stack:
 
 It registers two users, logs in, places an order, waits for the async
 payment flow to resolve it, and checks every 401/403/404/409/400 path this
-API is supposed to produce — 20 assertions, clear pass/fail per line, exit
+API is supposed to produce - 20 assertions, clear pass/fail per line, exit
 code `0` only if everything passed.
 
 ## Local development (without Docker)
 
 Each service is an independent NestJS app with its own `package.json`. You
-still need Postgres, Redis, and RabbitMQ running somewhere reachable — the
+still need Postgres, Redis, and RabbitMQ running somewhere reachable - the
 easiest way is to start just the infra containers:
 
 ```bash
@@ -201,7 +196,7 @@ npm run start:dev
 
 Start `user-service`, `order-service`, and `payment-service` before
 `api-gateway` so its RPC calls have somewhere to land (the RabbitMQ
-connections themselves are lazy, so start order isn't strict — but a
+connections themselves are lazy, so start order isn't strict - but a
 service that isn't up yet just means its calls will fail until it is).
 
 `make install` installs all four services in one shot.
@@ -210,7 +205,7 @@ service that isn't up yet just means its calls will fail until it is).
 
 **24 automated tests total: 22 unit tests across all four services, plus 2
 end-to-end tests scoped to `api-gateway` only.** They're run with two
-different commands — `npm test` never runs the e2e suite, and
+different commands - `npm test` never runs the e2e suite, and
 `npm run test:e2e` only exists in `api-gateway`:
 
 ```bash
@@ -222,13 +217,13 @@ npm run test:cov  # same, with coverage
 
 ```bash
 cd services/api-gateway
-npm run test:e2e  # the other 2 tests — boots the real app, hits /health
+npm run test:e2e  # the other 2 tests - boots the real app, hits /health
                    # and an unauthenticated /orders call over real HTTP
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md#testing-strategy) for why the other
 three services don't have an equivalent e2e suite, and what they get
-instead — plus why that page keeps these 24 automated tests, the separate
+instead - plus why that page keeps these 24 automated tests, the separate
 20-assertion smoke-test script (see [Verify it works](#verify-it-works)),
 and a one-time manual verification pass as three distinct things rather
 than folding them together.
@@ -241,11 +236,11 @@ Shortcuts: `make test` runs the 22 unit tests across all four services,
 
 `.github/workflows/ci.yml` lints, tests, and builds every service on each
 push/PR (matrixed across all four), then builds and publishes Docker images
-to GitHub Container Registry on pushes to `main`. No secrets to configure —
+to GitHub Container Registry on pushes to `main`. No secrets to configure -
 it uses the automatically-provided `GITHUB_TOKEN`.
 
-One setting you do need to flip once, on a fresh repo: **Settings → Actions
-→ General → Workflow permissions → "Read and write permissions"** — GitHub
+One setting you do need to flip once, on a fresh repo: **Settings -> Actions
+-> General -> Workflow permissions -> "Read and write permissions"** - GitHub
 disables package-publish permissions for `GITHUB_TOKEN` by default, so
 without this the `publish` job fails with a permissions error even though
 `test` and `docker-build` pass fine.
@@ -294,24 +289,24 @@ Docker network's service names).
 
 The default `fooduser`/`foodpass` RabbitMQ credentials and `JWT_SECRET`
 value are dev-only placeholders committed on purpose for a one-command
-`docker compose up` — rotate them before this touches anything real.
+`docker compose up` - rotate them before this touches anything real.
 
 ## Known limitations
 
 This is a demo/portfolio project, not a production system, and it's more
-useful to say so plainly than to imply otherwise. The short version — full
+useful to say so plainly than to imply otherwise. The short version - full
 reasoning in [ARCHITECTURE.md](./ARCHITECTURE.md#next-steps-for-a-production-deployment):
 
-- Event handlers are **at-least-once, not exactly-once** — a crash between
+- Event handlers are **at-least-once, not exactly-once** - a crash between
   a handler's DB write and its RabbitMQ ack could reprocess a message (see
   [ARCHITECTURE.md](./ARCHITECTURE.md#two-layers-of-retry)).
 - `synchronize: true` (TypeORM auto-schema) instead of migrations.
 - One Postgres instance hosting three databases, instead of three separate
   instances.
 - Symmetric JWT signing (`HS256`, shared secret) instead of asymmetric.
-- No distributed tracing — correlation IDs exist at the Gateway but aren't
+- No distributed tracing - correlation IDs exist at the Gateway but aren't
   yet propagated across the message bus.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT - see [LICENSE](./LICENSE).

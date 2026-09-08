@@ -9,7 +9,7 @@ import { OrdersService } from './orders.service';
 
 /**
  * RPC (request/response) commands. This controller listens on `order_queue`
- * in default-ack mode — retries for these belong to the caller (API
+ * in default-ack mode - retries for these belong to the caller (API
  * Gateway), not to message redelivery.
  */
 @Controller()

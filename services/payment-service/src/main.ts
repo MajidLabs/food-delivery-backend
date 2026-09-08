@@ -13,7 +13,7 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   const rmqUrl = config.getOrThrow<string>('RABBITMQ_URL');
 
-  // RPC command queue — default ack.
+  // RPC command queue - default ack.
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
@@ -23,7 +23,7 @@ async function bootstrap() {
     },
   });
 
-  // Event queue — manual ack with redelivery-count retry + dead-letter.
+  // Event queue - manual ack with redelivery-count retry + dead-letter.
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {

@@ -17,7 +17,7 @@ import { OrdersModule } from './orders/orders.module';
         password: config.getOrThrow<string>('DB_PASSWORD'),
         database: config.getOrThrow<string>('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true, // demo only — use migrations in production
+        synchronize: true, // demo only - use migrations in production
       }),
       inject: [ConfigService],
     }),
