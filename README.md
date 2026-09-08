@@ -7,13 +7,14 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-A microservices backend for a food-delivery platform: an API Gateway in
-front of independent **User**, **Order**, and **Payment** NestJS services,
-communicating over RabbitMQ (both request/response RPC and event-driven
-messaging), with PostgreSQL storage, Redis caching, JWT auth, structured
-logging, health checks, two layers of retry, 24 automated tests (22 unit +
-2 end-to-end - see [Tests](#tests)), and a GitHub Actions pipeline that
-builds and publishes Docker images.
+A production-style microservices backend for a food-delivery platform.
+
+It consists of an API Gateway in front of independent **User**, **Order**,
+and **Payment** NestJS services, communicating over RabbitMQ (both
+request/response RPC and event-driven messaging), with PostgreSQL storage,
+Redis caching, JWT auth, structured logging, health checks, two layers of
+retry, 24 automated tests (22 unit + 2 end-to-end - see [Tests](#tests)),
+and a GitHub Actions pipeline that builds and publishes Docker images.
 
 Full write-up of *why* it's built this way - including a real integration
 bug this project's own testing caught and fixed - is in
@@ -22,6 +23,7 @@ this yourself is in [CHECKLIST.md](./CHECKLIST.md).
 
 ## Contents
 
+- [Why this project](#why-this-project)
 - [What this demonstrates](#what-this-demonstrates)
 - [Architecture](#architecture)
 - [Stack](#stack)
@@ -35,6 +37,15 @@ this yourself is in [CHECKLIST.md](./CHECKLIST.md).
 - [Environment variables](#environment-variables)
 - [Known limitations](#known-limitations)
 - [License](#license)
+
+## Why this project
+
+This project demonstrates how a small food-delivery backend can be designed
+as independently deployable services while still handling authentication,
+messaging, retries, caching, failures, and asynchronous payment processing.
+
+The focus is on architecture and reliability rather than building a full
+consumer-facing food-delivery product.
 
 ## What this demonstrates
 
@@ -203,10 +214,14 @@ service that isn't up yet just means its calls will fail until it is).
 
 ## Tests
 
-**24 automated tests total: 22 unit tests across all four services, plus 2
-end-to-end tests scoped to `api-gateway` only.** They're run with two
-different commands - `npm test` never runs the e2e suite, and
-`npm run test:e2e` only exists in `api-gateway`:
+The project includes unit and end-to-end test coverage across the services.
+
+- 22 unit tests across all four services
+- 2 API gateway e2e tests
+- 20-assertion end-to-end smoke test against the full Docker stack
+
+The unit and e2e tests run via two different commands - `npm test` never
+runs the e2e suite, and `npm run test:e2e` only exists in `api-gateway`:
 
 ```bash
 cd services/<service-name>
