@@ -315,6 +315,11 @@ reasoning in [ARCHITECTURE.md](./ARCHITECTURE.md#next-steps-for-a-production-dep
 - Event handlers are **at-least-once, not exactly-once** - a crash between
   a handler's DB write and its RabbitMQ ack could reprocess a message (see
   [ARCHITECTURE.md](./ARCHITECTURE.md#two-layers-of-retry)).
+- DB writes and RabbitMQ event emits aren't atomic (no transactional
+  outbox) - a crash between an `orderRepository.save()` (or the
+  equivalent in Payment Service) and the `emit()` call right after it can
+  leave that row committed with no event ever sent, silently stuck (see
+  [ARCHITECTURE.md](./ARCHITECTURE.md#next-steps-for-a-production-deployment)).
 - `synchronize: true` (TypeORM auto-schema) instead of migrations.
 - One Postgres instance hosting three databases, instead of three separate
   instances.

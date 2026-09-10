@@ -386,6 +386,16 @@ matrix over the four `services/*` directories:
 
 ## Next steps for a production deployment
 
+- A transactional outbox on the producer side: `orders.service.ts` saves
+  the order row and then separately calls
+  `paymentEventsClient.emit('order.created', ...)`, and
+  `payments.service.ts` does the same for `payment.completed` /
+  `payment.failed`. A crash (or a dropped RabbitMQ connection) between the
+  DB save and that `emit()` call leaves the row committed with no event
+  ever sent - today nothing detects or replays it, so the order is stuck
+  in `PENDING` permanently. Writing the event to an outbox table in the
+  same transaction as the row, then having a separate relay process
+  publish from that table, closes this gap.
 - Replace `synchronize: true` with real TypeORM migrations.
 - Separate Postgres instances (or managed databases) per service.
 - Idempotency keys (or a transactional outbox) on the event handlers that
