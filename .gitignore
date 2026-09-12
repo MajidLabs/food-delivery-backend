@@ -9,4 +9,3 @@ Thumbs.db
 .vscode/
 .idea/
 *.tsbuildinfo
-.env.docker
