@@ -7,6 +7,27 @@
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
+
+## Screenshots
+
+Interactive API docs (Swagger), and a real request flow: placing an order
+through the Gateway triggers the Payment Service asynchronously over
+RabbitMQ — no direct call between them.
+
+<table>
+<tr>
+<td><img src="docs/screenshots/fd-swagger.png" alt="Swagger API docs" width="400"></td>
+<td><img src="docs/screenshots/fd-place-order.png" alt="Placing an order" width="400"></td>
+</tr>
+<tr>
+<td align="center">Interactive API docs</td>
+<td align="center">POST /orders — 201 Created</td>
+</tr>
+</table>
+
+![Async payment result](docs/screenshots/fd-payment-status.png)
+<p align="center"><em>Payment status flips to SUCCESS moments later — set by the Payment Service reacting to a RabbitMQ event, not a direct call from the order request.</em></p>
+
 A production-style microservices backend for a food-delivery platform.
 
 It consists of an API Gateway in front of independent **User**, **Order**,
