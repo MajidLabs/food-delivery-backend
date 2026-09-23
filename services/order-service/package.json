@@ -69,5 +69,10 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "overrides": {
+    "body-parser": "^1.20.6",
+    "multer": "^2.4.0",
+    "qs": "^6.16.0"
   }
 }
