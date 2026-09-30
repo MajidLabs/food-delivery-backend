@@ -54,6 +54,7 @@ this yourself is in [CHECKLIST.md](./CHECKLIST.md).
 - [Local development (without Docker)](#local-development-without-docker)
 - [Tests](#tests)
 - [CI/CD](#cicd)
+- [Deployment](#deployment)
 - [Project structure](#project-structure)
 - [Environment variables](#environment-variables)
 - [Known limitations](#known-limitations)
@@ -280,6 +281,23 @@ One setting you do need to flip once, on a fresh repo: **Settings -> Actions
 disables package-publish permissions for `GITHUB_TOKEN` by default, so
 without this the `publish` job fails with a permissions error even though
 `test` and `docker-build` pass fine.
+
+## Deployment
+
+Beyond local Docker, this stack was deployed and verified on a real 1 GB VPS
+running alongside other apps. The images published by the CI pipeline were
+pulled rather than rebuilt on the server, only the API Gateway was exposed
+(behind HTTPS via a Cloudflare Tunnel), and the placeholder `JWT_SECRET` was
+replaced with a generated one kept out of git. The instance is not kept
+running, so there is no public demo link.
+
+Verified on that deployment:
+
+- All seven containers reported healthy.
+- `scripts/health-check.sh` passed 20/20, both against the server itself and
+  through the public HTTPS endpoint.
+
+Details in [ARCHITECTURE.md](./ARCHITECTURE.md#deployment).
 
 ## Project structure
 

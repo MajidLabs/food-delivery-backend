@@ -384,6 +384,33 @@ matrix over the four `services/*` directories:
    the automatically-provided `GITHUB_TOKEN`, so it works with zero secret
    configuration.
 
+## Deployment
+
+The stack was deployed on a single small VPS (1 GB RAM, shared with other
+apps) to confirm it runs outside a development machine. The choices worth
+noting:
+
+- **Pulled, not built.** The server used the images the `publish` job pushes
+  to GHCR, through a server-specific compose file that swaps `build:` for
+  `image:`. That avoided building four NestJS images on a 1 GB machine, and
+  is a practical payoff of having CI publish images.
+- **Minimal exposure.** Only the API Gateway was published, bound to
+  localhost and reached through a Cloudflare Tunnel that terminates HTTPS.
+  Postgres, Redis, RabbitMQ and the three internal services were reachable
+  only on the Docker network, so their dev-only default credentials were
+  never exposed.
+- **Secret not from the repo.** `JWT_SECRET` in `.env.docker` is a committed
+  placeholder; the deployment overrode it with a generated value from a
+  git-ignored `.env`.
+- **Verification.** All seven containers healthy, and
+  `scripts/health-check.sh` passed 20/20 twice: against the server itself,
+  and through the public HTTPS endpoint (which also exercises the tunnel,
+  TLS, and the Gateway end to end).
+- **Unchanged.** The payment gateway is still simulated (about 20% failure
+  by design), and everything under "Next steps" below still applies - this
+  was a demonstration deployment, not a production one. The instance is not
+  kept running.
+
 ## Next steps for a production deployment
 
 - A transactional outbox on the producer side: `orders.service.ts` saves
