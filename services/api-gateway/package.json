@@ -30,7 +30,7 @@
     "@nestjs/terminus": "^10.2.0",
     "@nestjs/throttler": "^5.1.2",
     "amqp-connection-manager": "^4.1.14",
-    "amqplib": "^0.10.4",
+    "amqplib": "^2.0.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "passport": "^0.7.0",
